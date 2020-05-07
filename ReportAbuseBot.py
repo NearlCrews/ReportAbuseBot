@@ -4,7 +4,6 @@ import configparser
 import sqlite3
 import os.path
 import time
-from pprint import pprint
 
 # Read the configuration.
 config = configparser.ConfigParser()
@@ -47,17 +46,16 @@ while True:
   for submission in reddit.subreddit(reddit_target_subreddit).mod.stream.reports():
     try:
 
-      link_id = submission.link_id
-      if type(link_id) == type(None):
+      if type(submission.link_id) == type(None):
         continue
 
       # Insert into the database.
       epoch = time.time()
-      c.execute("INSERT INTO reportabusebot (epoch, linkid, redditurl) VALUES (?, ?, ?)", (int(epoch), str(link_id), str(submission.link_permalink)))
+      c.execute("INSERT INTO reportabusebot (epoch, linkid, redditurl) VALUES (?, ?, ?)", (int(epoch), str(submission.link_id), str(submission.link_permalink)))
       conn.commit()
 
       # Check and add to the count.
-      c.execute("SELECT count() FROM reportabusebot WHERE linkid = ?", (link_id,))
+      c.execute("SELECT count() FROM reportabusebot WHERE linkid = ?", (submission.link_id,))
       total_reports = c.fetchone()[0]
 
       # DEBUG
